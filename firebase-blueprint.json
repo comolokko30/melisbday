@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "GameSession": {
+      "title": "Game Session",
+      "description": "A live quiz game session.",
+      "type": "object",
+      "properties": {
+        "pin": { "type": "string" },
+        "status": { "type": "string", "enum": ["waiting", "playing", "leaderboard", "finished"] },
+        "currentQuestionIndex": { "type": "integer" },
+        "questionStartTime": { "type": "string", "format": "date-time" },
+        "hostId": { "type": "string" },
+        "totalQuestions": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["pin", "status", "hostId"]
+    },
+    "Participant": {
+      "title": "Participant",
+      "description": "A player in a game session.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "score": { "type": "integer" },
+        "lastAnswer": {
+          "type": "object",
+          "properties": {
+            "questionIndex": { "type": "integer" },
+            "choiceIndex": { "type": "integer" },
+            "isCorrect": { "type": "boolean" },
+            "pointsEarned": { "type": "integer" },
+            "timestamp": { "type": "string", "format": "date-time" }
+          }
+        }
+      },
+      "required": ["name", "score"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "A quiz question.",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctIndex": { "type": "integer" },
+        "order": { "type": "integer" }
+      },
+      "required": ["text", "options", "correctIndex", "order"]
+    }
+  },
+  "firestore": {
+    "/game_sessions/{sessionId}": {
+      "schema": "GameSession",
+      "description": "The main game session document."
+    },
+    "/game_sessions/{sessionId}/participants/{participantId}": {
+      "schema": "Participant",
+      "description": "Players in the session."
+    },
+    "/game_sessions/{sessionId}/questions/{questionId}": {
+      "schema": "Question",
+      "description": "Questions for this session."
+    }
+  }
+}

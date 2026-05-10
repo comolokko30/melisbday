@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isHost(sessionId) {
+      return isSignedIn() && get(/databases/$(database)/documents/game_sessions/$(sessionId)).data.hostId == request.auth.uid;
+    }
+
+    // Game Sessions
+    match /game_sessions/{sessionId} {
+      allow get: if true; 
+      allow list: if true;
+      
+      allow create: if isSignedIn() 
+        && request.resource.data.hostId == request.auth.uid
+        && request.resource.data.status == 'waiting'
+        && request.resource.data.pin is string
+        && request.resource.data.pin.size() == 6;
+
+      allow update: if isSignedIn() && (
+        // Host can update status, currentQuestionIndex, questionStartTime
+        (resource.data.hostId == request.auth.uid && request.resource.data.hostId == resource.data.hostId)
+      );
+
+      // Subcollections
+      match /participants/{participantId} {
+        allow get, list: if true;
+        
+        allow create: if isSignedIn()
+          && participantId == request.auth.uid
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 32
+          && request.resource.data.score == 0;
+
+        allow update: if isSignedIn()
+          && participantId == request.auth.uid
+          && request.resource.data.name == resource.data.name
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['score', 'lastAnswer']);
+      }
+
+      match /questions/{questionId} {
+        allow get, list: if true;
+        allow create: if isHost(sessionId);
+      }
+    }
+  }
+}
