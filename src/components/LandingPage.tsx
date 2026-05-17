@@ -24,7 +24,7 @@ export function LandingPage({ onHost, onJoin }: Props) {
         </div>
         <h1 className="text-5xl md:text-9xl font-black text-artistic-yellow italic tracking-tighter uppercase drop-shadow-[3px_3px_0px_rgba(0,0,0,1)] md:drop-shadow-[6px_6px_0px_rgba(0,0,0,1)] flex flex-col">
           <span className="leading-none">MELIS'IN</span>
-          <span className="leading-none text-artistic-red">QUIZ'I</span>
+          <span className="leading-none text-artistic-red">QUIZI</span>
         </h1>
       </motion.div>
 
